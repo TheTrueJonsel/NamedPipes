@@ -1,20 +1,30 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
 
-//creating mutex
+//declaring mutex
 pthread_mutex_t mutex;
+const char *path = "./my_pipe";
 
 int main()
 {
-    //named pipe erstellen
-    //zwei zahlen als als userinput erhalten
-    //beide zahlen in die named pipe schreiben
-    //kindprozess erstellen über posix_spawn
-    //kindprozess beide zahlen aus der named pipe auslesen lassen
-    //kindprozess addiert beide zahlen
-    //kindprozess schreibt ergebnis der addition in die pipe zurück
-    //Elternprozess liest Ergebnis aus der pipe und gibt es über stdout aus
-    //Elternprozess wartet dann erneut aus userinput
+    
+    //creating pipe
+    int status = mkfifo(path, S_IRUSR | S_IWUSR);
+    if(status == 0){
+        printf("successfully created pipe\npipe-status: %d\n", status);
+    } else {
+        printf("ERROR: could not create pipe\npipe-status: %d\n", status);
+    }
+
+    //opening the pipe with read and write permissions
+    int fd = open(path, O_RDWR);
+
+
+    //deleting the file from disk after program is done running
+    remove("./my_pipe");
 
     //initializing mutex
     pthread_mutex_init(&mutex, NULL);
