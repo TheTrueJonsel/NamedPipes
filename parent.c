@@ -14,13 +14,6 @@ double firstNum, secondNum;
 int fd;
 double result;
 
-void createChild();
-void createPipe();
-void getUserInput();
-void writeToPipe();
-void clearConsole();
-void readFromPipe();
-
 int main()
 {
     createPipe();
