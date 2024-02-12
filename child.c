@@ -2,5 +2,5 @@
 
 int main()
 {
-    printf("I am running");
+    //printf("I am running");
 }
