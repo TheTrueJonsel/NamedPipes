@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include "child.h"
 
-const int fd;
+int fd;
 const char *pipePath = "./my_pipe";
 
 double firstNum, secondNum, result;
