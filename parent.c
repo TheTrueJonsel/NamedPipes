@@ -32,13 +32,9 @@ int main()
     //clear up the standard output after all of the status outputs
     clearConsole();
 
-    //declaring variables to store userinput
+    pthread_mutex_lock(&mutex);
     while(1){
         getUserInput();
-
-        //locking the mutex to write userinput to pipe
-        pthread_mutex_lock(&mutex);
-        // <--critical region-->
         
         writeToPipe();
 
@@ -48,10 +44,6 @@ int main()
         //locking the mutex to read the result from the pipe
         pthread_mutex_lock(&mutex);
         readFromPipe();
-
-        //unlocking mutex to start next loop iteration with locking
-        //make sure that child process asks if pipe is empty and does not take lock, if it is empty
-        pthread_mutex_unlock(&mutex);
     }
 
 
@@ -96,22 +88,22 @@ void createChild(){
 }
 
 void writeToPipe(){
-    double writeStatus;
+    int writeStatus;
 
     //writing first number into the pipe
     writeStatus = write(fd, &firstNum, sizeof(double));
     if(writeStatus != -1){
-        printf("Successfully wrote %lf Byte into the pipe\n", writeStatus);
+        printf("Successfully wrote %d Byte into the pipe\n", writeStatus);
     } else {
-        printf("ERROR - write operation failed with status: %lf\n", writeStatus);
+        printf("ERROR - write operation failed with status: %d\n", writeStatus);
     }
 
     //writing second number into the pipe
     writeStatus = write(fd, &secondNum, sizeof(double));
     if(writeStatus != -1){
-        printf("Successfully wrote %lf Byte into the pipe\n", writeStatus);
+        printf("Successfully wrote %d Byte into the pipe\n", writeStatus);
     } else {
-        printf("ERROR - write operation failed with status: %lf\n", writeStatus);
+        printf("ERROR - write operation failed with status: %d\n", writeStatus);
     }
 }
 
