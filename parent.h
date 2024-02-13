@@ -7,5 +7,6 @@ void getUserInput();
 void writeToPipe();
 void clearConsole();
 void readFromPipe();
+void initMutex();
 
 #endif

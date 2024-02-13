@@ -3,5 +3,6 @@
 
 void readFromPipe();
 void writeToPipe();
+void initMutex();
 
 #endif
