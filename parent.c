@@ -9,8 +9,6 @@
 #include <stdlib.h>
 #include "parent.h"
 
-
-
 const char *pipePath = "./my_pipe";
 double firstNum, secondNum;
 int fd;
@@ -22,7 +20,6 @@ int mutexValue;
 
 int main()
 {
-    
     signal(SIGINT, handler);
     signal(SIGHUP, handler);
     signal(SIGTERM, handler);
@@ -35,10 +32,9 @@ int main()
     //sleep for 3 seconds to allow user to see status output
     sleep(3);
     clearConsole();
-
+    
     while(1){
         getUserInput();
-        
         writeToPipe();
 
         //unlocking mutex to allow childprocess to access the pipe
@@ -127,7 +123,6 @@ void readFromPipe(){
     } else {
         printf("PARENT: ERROR - read operation failed with status: %d\n", readStatus);
     }
-
 }
 
 void initMutex(){
@@ -146,7 +141,6 @@ void initMutex(){
     } else {
         printf("PARENT: Successfully initialized turn-mutex\n");
     }
-
 }
 
 //done for testing, can be ignored
