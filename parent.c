@@ -161,6 +161,7 @@ void initMutex(){
 
 }
 
+//done for testing, can be ignored
 #if 0
 void resetSemaphores(){
     clearConsole();
