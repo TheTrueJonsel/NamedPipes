@@ -53,9 +53,6 @@ int main()
         sem_wait(mutex);
         readFromPipe();
     }
-
-
-    
     return 0;
 }
 
