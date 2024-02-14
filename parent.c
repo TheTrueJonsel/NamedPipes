@@ -55,15 +55,6 @@ int main()
     }
 
 
-
-    //deleting the file from disk after program is done running
-    remove("./my_pipe");
-
-
-    
-
-    //override signal function to detroy the mutex when process gets terminated/killed
-    //pthread_mutex_destroy(&mutex);
     
     return 0;
 }
