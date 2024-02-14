@@ -29,7 +29,6 @@ int main()
         sem_wait(turn);
         sem_post(mutex);
     }
-
 }
 
 //reads from the pipe and prints the output
