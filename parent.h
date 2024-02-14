@@ -9,5 +9,6 @@ void clearConsole();
 void readFromPipe();
 void initMutex();
 void resetSemaphores();
+void handler();
 
 #endif

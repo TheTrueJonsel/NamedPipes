@@ -6,7 +6,9 @@
 #include <unistd.h>
 #include <semaphore.h>
 #include <signal.h>
+#include <stdlib.h>
 #include "parent.h"
+
 
 
 const char *pipePath = "./my_pipe";
@@ -20,10 +22,14 @@ int mutexValue;
 
 int main()
 {
+    
+    signal(SIGINT, handler);
+    signal(SIGHUP, handler);
+    signal(SIGTERM, handler);
     createPipe();
     fd = open(pipePath, O_RDWR);
     initMutex();
-    resetSemaphores();
+    //resetSemaphores();
     createChild();
 
     //sleep for 3 seconds to allow user to see status output
@@ -66,9 +72,9 @@ int main()
 void createPipe(){
     int pipeStatus = mkfifo(pipePath, S_IRUSR | S_IWUSR);
     if(pipeStatus == 0){
-        printf("successfully created pipe\n");
+        printf("PARENT: successfully created pipe\n");
     } else {
-        printf("ERROR: could not create pipe\npipe-status: %d\n", pipeStatus);
+        printf("PARENT: ERROR: could not create pipe\npipe-status: %d\n", pipeStatus);
     }
 }
 
@@ -83,7 +89,7 @@ void createChild(){
     //creating child process
     int spawnStatus = posix_spawn(&pid, "./child", NULL, NULL, argv, environ); 
     if(spawnStatus == 0){
-        printf("successfully created child process with pid: %d\n", pid);
+        printf("PARENT: successfully created child process with pid: %d\n", pid);
     } else {
         printf("Failed to create child process. Status: %d\n", spawnStatus);
     }
@@ -95,7 +101,7 @@ void writeToPipe(){
     //writing first number into the pipe
     writeStatus = write(fd, &firstNum, sizeof(double));
     if(writeStatus != -1){
-        printf("PARENT: Successfully wrote %d Byte into the pipe\n", writeStatus);
+        //printf("PARENT: Successfully wrote %d Byte into the pipe\n", writeStatus);
     } else {
         printf("PARENT: ERROR - write operation failed with status: %d\n", writeStatus);
     }
@@ -103,7 +109,7 @@ void writeToPipe(){
     //writing second number into the pipe
     writeStatus = write(fd, &secondNum, sizeof(double));
     if(writeStatus != -1){
-        printf("PARENT: Successfully wrote %d Byte into the pipe\n", writeStatus);
+        //printf("PARENT: Successfully wrote %d Byte into the pipe\n", writeStatus);
     } else {
         printf("PARENT: ERROR - write operation failed with status: %d\n", writeStatus);
     }
@@ -113,7 +119,9 @@ void writeToPipe(){
 void getUserInput(){
         printf("Enter the two numbers that you want to add, seperated by a space:\n");
         scanf("%lf %lf", &firstNum, &secondNum);
+        clearConsole();
         printf("You entered: %lf, %lf\n", firstNum, secondNum);
+        printf("-------------------\n");
 }
 
 void clearConsole(){
@@ -126,8 +134,8 @@ void clearConsole(){
 void readFromPipe(){
     int readStatus = read(fd, &result, sizeof(double));
     if(readStatus != -1){
-        printf("PARENT: Successfully read %d Byte from the pipe\n", readStatus);
-        printf("PARENT: The number read from the pipe is: %lf\n", result);
+        //printf("PARENT: Successfully read %d Byte from the pipe\n", readStatus);
+        printf("PARENT: The result of adding both numbers is: %lf\n", result);
     } else {
         printf("PARENT: ERROR - read operation failed with status: %d\n", readStatus);
     }
@@ -153,9 +161,10 @@ void initMutex(){
 
 }
 
+#if 0
 void resetSemaphores(){
     clearConsole();
-    printf("PARENT: ------------------ RESETTING SEMAPHORES ------------------");
+    printf("PARENT: ------------------ RESETTING SEMAPHORES ------------------\n");
 
     //resetting mutex semaphore
     sem_getvalue(mutex, &mutexValue);
@@ -177,4 +186,16 @@ void resetSemaphores(){
 
     sleep(5);
     clearConsole();
+}
+#endif
+
+void handler(){
+    int removeStatus = remove("./my_pipe");
+    if(removeStatus == 0){
+        printf("\nPARENT: Successfully removed the pipe\nEXITING\n");
+    } else {
+        printf("\nPARENT: ERROR - could not remove file\n");
+    }
+    sleep(3);
+    exit(0);
 }
