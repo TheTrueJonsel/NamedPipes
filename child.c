@@ -8,21 +8,26 @@
 int fd;
 const char *pipePath = "./my_pipe";
 sem_t *mutex;
+sem_t * turn;
 
 double firstNum, secondNum, result;
+int turnValue;
 
 int main()
 {
     fd = open(pipePath, O_RDWR);
     initMutex();
     while(1){
+        sem_getvalue(turn, &turnValue);
+        while(turnValue != 1){
+            sem_getvalue(turn, &turnValue);
+        }
         sem_wait(mutex);
         readFromPipe();
         result = firstNum + secondNum;
         writeToPipe();
+        sem_wait(turn);
         sem_post(mutex);
-        
-        
     }
 
 }
@@ -58,10 +63,19 @@ void writeToPipe(){
 }
 
 void initMutex(){
+    //mutex
     mutex = sem_open("/mutex", O_CREAT, S_IRUSR | S_IWUSR, 0);
     if(mutex == SEM_FAILED){
         printf("CHILD: ERROR - could not open mutex\n");
     } else {
         printf("CHILD: Successfully opened mutex\n");
+    }
+
+    //turn variable to ensure that the Bounded Waiting criterion for mutual exclusion is satisfied
+    turn = sem_open("/turn", O_CREAT, S_IRUSR | S_IWUSR, 0);
+    if(turn == SEM_FAILED){
+        printf("CHILD: ERROR - could not open turn-mutex\n");
+    } else {
+        printf("CHILD: Successfully initialized turn-mutex\n");
     }
 }

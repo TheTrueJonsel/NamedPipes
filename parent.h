@@ -8,5 +8,6 @@ void writeToPipe();
 void clearConsole();
 void readFromPipe();
 void initMutex();
+void resetSemaphores();
 
 #endif

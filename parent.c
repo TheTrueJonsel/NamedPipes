@@ -5,6 +5,7 @@
 #include <spawn.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <signal.h>
 #include "parent.h"
 
 
@@ -13,12 +14,16 @@ double firstNum, secondNum;
 int fd;
 double result;
 sem_t *mutex;
+sem_t *turn;
+int turnValue;
+int mutexValue;
 
 int main()
 {
     createPipe();
     fd = open(pipePath, O_RDWR);
     initMutex();
+    resetSemaphores();
     createChild();
 
     //sleep for 3 seconds to allow user to see status output
@@ -31,10 +36,14 @@ int main()
         writeToPipe();
 
         //unlocking mutex to allow childprocess to access the pipe
+        sem_post(turn);
         sem_post(mutex);
-        sleep(8);
 
         //locking the mutex to read the result from the pipe
+        sem_getvalue(turn, &turnValue);
+        while(turnValue != 0){
+            sem_getvalue(turn, &turnValue);
+        }
         sem_wait(mutex);
         readFromPipe();
     }
@@ -126,10 +135,46 @@ void readFromPipe(){
 }
 
 void initMutex(){
+    //mutex
     mutex = sem_open("/mutex", O_CREAT, S_IRUSR | S_IWUSR, 0);
     if(mutex == SEM_FAILED){
         printf("PARENT: ERROR - could not open mutex\n");
     } else {
         printf("PARENT: successfully initialized mutex\n");
     }
+
+    //turn variable to ensure that the Bounded Waiting criterion for mutual exclusion is satisfied
+    turn = sem_open("/turn", O_CREAT, S_IRUSR | S_IWUSR, 0);
+    if(turn == SEM_FAILED){
+        printf("PARENT: ERROR - could not open turn-mutex\n");
+    } else {
+        printf("PARENT: Successfully initialized turn-mutex\n");
+    }
+
+}
+
+void resetSemaphores(){
+    clearConsole();
+    printf("PARENT: ------------------ RESETTING SEMAPHORES ------------------");
+
+    //resetting mutex semaphore
+    sem_getvalue(mutex, &mutexValue);
+    printf("PARENT: former value of mutex-semaphore: %d\n", mutexValue);
+    for(int i = 0; i < mutexValue; i++){
+        sem_wait(mutex);
+    }
+    sem_getvalue(mutex, &mutexValue);
+    printf("PARENT: current value of mutex-semaphore: %d\n", mutexValue);
+
+    //resetting turn semaphore
+    sem_getvalue(turn, &turnValue);
+    printf("PARENT: former value of turn-semaphore: %d\n", turnValue);
+    for(int i = 0; i < turnValue; i++){
+        sem_wait(turn);
+    }
+    sem_getvalue(turn, &turnValue);
+    printf("PARENT: current value of turn-semaphore: %d\n", turnValue);
+
+    sleep(5);
+    clearConsole();
 }
